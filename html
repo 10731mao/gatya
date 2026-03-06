@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ガチャゲーム</title>
+
+<style>
+body{
+    font-family: sans-serif;
+    background: linear-gradient(135deg,#1e1e2f,#3a3a6a);
+    color:white;
+    text-align:center;
+    margin:0;
+}
+
+h1{
+    margin-top:30px;
+}
+
+button{
+    margin:20px;
+    padding:12px 25px;
+    font-size:18px;
+    border:none;
+    border-radius:10px;
+    background:#ffd700;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#ffea55;
+}
+
+#results{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:10px;
+    padding:20px;
+}
+
+.card{
+    width:120px;
+    height:150px;
+    border-radius:10px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    font-weight:bold;
+}
+
+.star3{
+    background:#777;
+}
+
+.star4{
+    background:#3b82f6;
+}
+
+.star5{
+    background:linear-gradient(45deg,#ffd700,#ff9800);
+    color:black;
+}
+</style>
+</head>
+
+<body>
+
+<h1>ガチャゲーム</h1>
+
+<button onclick="gacha10()">10連ガチャ</button>
+
+<div id="results"></div>
+
+<script>
+
+const characters = {
+    3:["スライム","村人","兵士","見習い魔法使い","盗賊"],
+    4:["騎士","魔導士","弓使い","神官","忍者"],
+    5:["伝説の勇者","古代竜使い","大賢者","魔王","天界の守護者"]
+};
+
+function drawGacha(){
+
+    let r = Math.random()*100;
+
+    let rarity;
+
+    if(r < 3){
+        rarity = 5;
+    }else if(r < 20){
+        rarity = 4;
+    }else{
+        rarity = 3;
+    }
+
+    let list = characters[rarity];
+    let name = list[Math.floor(Math.random()*list.length)];
+
+    return {rarity,name};
+}
+
+function gacha10(){
+
+    const results = document.getElementById("results");
+    results.innerHTML="";
+
+    for(let i=0;i<10;i++){
+
+        let result = drawGacha();
+
+        let card = document.createElement("div");
+        card.classList.add("card","star"+result.rarity);
+
+        card.innerHTML =
+            "★".repeat(result.rarity) +
+            "<br>" +
+            result.name;
+
+        results.appendChild(card);
+    }
+}
+
+</script>
+
+</body>
+</html>
