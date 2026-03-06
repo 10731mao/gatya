@@ -2,125 +2,186 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>ガチャゲーム</title>
+<title>選択肢付きノベルゲーム</title>
 
 <style>
 body{
-    font-family: sans-serif;
-    background: linear-gradient(135deg,#1e1e2f,#3a3a6a);
-    color:white;
-    text-align:center;
     margin:0;
+    background:#000;
+    color:white;
+    font-family:sans-serif;
 }
 
-h1{
-    margin-top:30px;
-}
-
-button{
-    margin:20px;
-    padding:12px 25px;
-    font-size:18px;
-    border:none;
-    border-radius:10px;
-    background:#ffd700;
-    cursor:pointer;
-}
-
-button:hover{
-    background:#ffea55;
-}
-
-#results{
-    display:flex;
-    flex-wrap:wrap;
-    justify-content:center;
-    gap:10px;
-    padding:20px;
-}
-
-.card{
-    width:120px;
-    height:150px;
-    border-radius:10px;
+#game{
+    height:100vh;
     display:flex;
     flex-direction:column;
-    justify-content:center;
-    align-items:center;
+    justify-content:flex-end;
+}
+
+#textbox{
+    background:rgba(0,0,0,0.75);
+    padding:25px;
+}
+
+#name{
     font-weight:bold;
+    margin-bottom:10px;
 }
 
-.star3{
-    background:#777;
+#text{
+    line-height:1.7;
+    font-size:20px;
 }
 
-.star4{
-    background:#3b82f6;
+#choices{
+    margin-top:20px;
 }
 
-.star5{
-    background:linear-gradient(45deg,#ffd700,#ff9800);
-    color:black;
+.choice{
+    display:block;
+    margin-top:10px;
+    padding:10px;
+    background:#333;
+    border:none;
+    color:white;
+    cursor:pointer;
+    font-size:16px;
+}
+
+.choice:hover{
+    background:#555;
+}
+
+#next{
+    margin-top:10px;
+    opacity:0.7;
+    font-size:14px;
 }
 </style>
-</head>
 
+</head>
 <body>
 
-<h1>ガチャゲーム</h1>
+<div id="game">
 
-<button onclick="gacha10()">10連ガチャ</button>
+<div id="textbox">
+<div id="name"></div>
+<div id="text"></div>
 
-<div id="results"></div>
+<div id="choices"></div>
+
+<div id="next">クリックで進む</div>
+</div>
+
+</div>
 
 <script>
 
-const characters = {
-    3:["スライム","村人","兵士","見習い魔法使い","盗賊"],
-    4:["騎士","魔導士","弓使い","神官","忍者"],
-    5:["伝説の勇者","古代竜使い","大賢者","魔王","天界の守護者"]
+const story = {
+
+start:{
+name:"語り手",
+text:"夜の森の前に立っている。",
+next:"q1"
+},
+
+q1:{
+name:"語り手",
+text:"森の奥から、不思議な光が見える。",
+choices:[
+{text:"森に入る", next:"forest"},
+{text:"町へ戻る", next:"town"}
+]
+},
+
+forest:{
+name:"主人公",
+text:"……行ってみるか。",
+next:"forest2"
+},
+
+forest2:{
+name:"語り手",
+text:"森の奥で、光る石を見つけた。",
+choices:[
+{text:"触る", next:"magic"},
+{text:"無視する", next:"leave"}
+]
+},
+
+magic:{
+name:"語り手",
+text:"石が強く輝き、あなたは不思議な力を得た。END"
+},
+
+leave:{
+name:"語り手",
+text:"あなたは石を無視して森を去った。END"
+},
+
+town:{
+name:"主人公",
+text:"今日はやめておこう。",
+next:"endTown"
+},
+
+endTown:{
+name:"語り手",
+text:"あなたは安全に町へ帰った。END"
+}
+
 };
 
-function drawGacha(){
+let current = "start";
 
-    let r = Math.random()*100;
+function showScene(){
 
-    let rarity;
+const scene = story[current];
 
-    if(r < 3){
-        rarity = 5;
-    }else if(r < 20){
-        rarity = 4;
-    }else{
-        rarity = 3;
-    }
+document.getElementById("name").textContent = scene.name;
+document.getElementById("text").textContent = scene.text;
 
-    let list = characters[rarity];
-    let name = list[Math.floor(Math.random()*list.length)];
+const choicesDiv = document.getElementById("choices");
+choicesDiv.innerHTML = "";
 
-    return {rarity,name};
+if(scene.choices){
+
+document.getElementById("next").style.display="none";
+
+scene.choices.forEach(choice=>{
+const btn = document.createElement("button");
+btn.textContent = choice.text;
+btn.className="choice";
+
+btn.onclick = ()=>{
+current = choice.next;
+showScene();
+};
+
+choicesDiv.appendChild(btn);
+});
+
+}else{
+
+document.getElementById("next").style.display="block";
+
 }
 
-function gacha10(){
-
-    const results = document.getElementById("results");
-    results.innerHTML="";
-
-    for(let i=0;i<10;i++){
-
-        let result = drawGacha();
-
-        let card = document.createElement("div");
-        card.classList.add("card","star"+result.rarity);
-
-        card.innerHTML =
-            "★".repeat(result.rarity) +
-            "<br>" +
-            result.name;
-
-        results.appendChild(card);
-    }
 }
+
+document.body.onclick = function(){
+
+const scene = story[current];
+
+if(scene.next){
+current = scene.next;
+showScene();
+}
+
+};
+
+showScene();
 
 </script>
 
