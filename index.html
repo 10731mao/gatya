@@ -2,220 +2,317 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>選択肢付きノベルゲーム</title>
-
+<title>終末観測 試作版</title>
 <style>
-
-body{
-margin:0;
-background:black;
-color:white;
-font-family:sans-serif;
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
+body {
+    background: #0a0a0a;
+    color: #e0e0e0;
+    font-family: "Hiragino Mincho ProN", serif;
+    margin: 0;
+    padding: 0;
 }
-
-#game{
-width:700px;
+#game {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
 }
-
-#textbox{
-background:rgba(0,0,0,0.8);
-padding:30px;
-border-radius:10px;
+#text {
+    min-height: 200px;
+    line-height: 1.8;
+    white-space: pre-wrap;
 }
-
-#name{
-font-weight:bold;
-margin-bottom:10px;
-font-size:20px;
+#choices {
+    margin-top: 20px;
 }
-
-#text{
-font-size:18px;
-line-height:1.7;
-min-height:80px;
+button {
+    display: block;
+    width: 100%;
+    margin: 8px 0;
+    padding: 10px;
+    background: #1a1a1a;
+    color: #ddd;
+    border: 1px solid #444;
+    cursor: pointer;
 }
-
-#choices{
-margin-top:20px;
+button:hover {
+    background: #333;
 }
-
-.choice{
-display:block;
-margin-top:10px;
-padding:12px;
-background:#333;
-border:none;
-color:white;
-cursor:pointer;
-width:100%;
-font-size:16px;
+.fade {
+    animation: fadeIn 1s;
 }
-
-.choice:hover{
-background:#555;
+@keyframes fadeIn {
+    from {opacity:0;}
+    to {opacity:1;}
 }
-
-#next{
-margin-top:15px;
-text-align:right;
-opacity:0.7;
-}
-
-#restart{
-margin-top:20px;
-padding:12px;
-width:100%;
-font-size:16px;
-display:none;
-cursor:pointer;
-}
-
 </style>
 </head>
-
 <body>
 
 <div id="game">
-
-<div id="textbox">
-
-<div id="name"></div>
-<div id="text"></div>
-
-<div id="choices"></div>
-
-<div id="next">クリックで進む</div>
-
-<button id="restart">最初に戻る</button>
-
-</div>
-
+    <div id="text" class="fade"></div>
+    <div id="choices"></div>
 </div>
 
 <script>
-
-const story = {
-
-start:{
-name:"語り手",
-text:"夜の森の前に立っている。",
-next:"q1"
-},
-
-q1:{
-name:"語り手",
-text:"森の奥から、不思議な光が見える。",
-choices:[
-{text:"森に入る",next:"forest"},
-{text:"町へ戻る",next:"town"}
-]
-},
-
-forest:{
-name:"語り手",
-text:"……行ってみるか。",
-next:"forest2"
-},
-
-forest2:{
-name:"語り手",
-text:"森の奥で、光る石を見つけた。",
-choices:[
-{text:"触る",next:"magic"},
-{text:"無視する",next:"leave"}
-]
-},
-
-magic:{
-name:"語り手",
-text:"石が強く輝き、あなたは不思議な力を得た。END"
-},
-
-leave:{
-name:"語り手",
-text:"あなたは石を無視して森を去った。END"
-},
-
-town:{
-name:"主人公",
-text:"今日はやめておこう。",
-next:"endTown"
-},
-
-endTown:{
-name:"語り手",
-text:"あなたは安全に町へ帰った。END"
-}
-
+let state = {
+    saint: 0,
+    mage: 0
 };
 
-let current="start";
+const textEl = document.getElementById("text");
+const choicesEl = document.getElementById("choices");
 
-function showScene(){
+function show(text, choices) {
+    textEl.classList.remove("fade");
+    void textEl.offsetWidth;
+    textEl.classList.add("fade");
 
-const scene = story[current];
+    textEl.textContent = text;
+    choicesEl.innerHTML = "";
 
-document.getElementById("name").textContent = scene.name;
-document.getElementById("text").textContent = scene.text;
-
-const choicesDiv = document.getElementById("choices");
-choicesDiv.innerHTML="";
-
-document.getElementById("restart").style.display="none";
-
-if(scene.choices){
-
-document.getElementById("next").style.display="none";
-
-scene.choices.forEach(choice=>{
-const btn=document.createElement("button");
-btn.textContent=choice.text;
-btn.className="choice";
-
-btn.onclick=(e)=>{
-e.stopPropagation();
-current=choice.next;
-showScene();
-};
-
-choicesDiv.appendChild(btn);
-});
-
-}else{
-
-document.getElementById("next").style.display="block";
-
+    choices.forEach(c => {
+        const btn = document.createElement("button");
+        btn.textContent = c.text;
+        btn.onclick = c.action;
+        choicesEl.appendChild(btn);
+    });
 }
 
-if(scene.text.includes("END")){
-document.getElementById("next").style.display="none";
-document.getElementById("restart").style.display="block";
+// 序章
+function start() {
+    show(
+`灰が降っていた。
+
+雪のように静かに。赤く焼けた大地から舞い上がり周囲へひたすらに落ちていた。
+地面には無数の死体が転がっていた。
+その戦はもう終わったのだろう。敗者のみがただ残っていた。
+
+他の場より多くの人間が倒れている所があった。中心は不自然に開けており一人の男がそこにはいた。
+灰色の外套を纏った人間。血は乾き、剣は手から離れ泥の中に半分沈んでいた。
+この惨状はこの者が作り出したものだろうか。果たして知る者はいない。
+
+男は身動き一つせず横たわっていた。死んでいるのだろうか。あるいは事切れる最中であるというのだろうか。
+灰はしんしんと降り積もり男も薄らとそれを被った。
+
+——そして、影が……影が、影が少しばかり動いたのである。
+何者かの『影』が。
+
+いったいそれは何処から出てきたのだろうか。陽の一つも出ていないというのに。
+ゆっくりと黒が首をもたげた。そして、ゆっくりとヒトの形をとり男のそばへと音もたてずに擦り寄った。
+
+「……生きているのか」
+影が嘯いた。男の目が僅かに動き影を視た。
+
+「選ぶといい」
+影は男を慈しむように、あるいは縛り上げるようにその身を侵食していき、その視界は完全な漆黒に塗り潰された。
+ただ影の言葉だけが鼓膜に突き刺さる。
+「契約か、死か」
+
+男はただただ影を睨みつけた。
+
+それからいくら時間がたったのだろうか。あるいは刹那であったのかもしれないが。
+影の問いに対し、男はただ凝固した血の塊を吐き出した。
+……それが答えであった。少なくとも影にとっては。
+
+影は男の傷口から力を注ぎ込んだ。
+契約には対価が必要だ。影は男に力を授けた。ならば男からは何を奪おうか。
+
+影は男の喉元に、冷たい指先を這わせた。
+
+神殿。
+塔。`,
+    [
+        { text: "神殿へ向かう", action: saint1 },
+        { text: "塔へ向かう", action: mage1 }
+    ]);
 }
 
+// --- 聖女ルート ---
+function saint1() {
+    state.saint += 2;
+    show(
+`神殿では食事が配られている。
+白い少女が微笑みながら手を取る。
+
+「あなたも救われますように」`,
+    [
+        { text: "祈りを受ける", action: saint2a },
+        { text: "手を振り払う", action: saint2b }
+    ]);
 }
 
-document.getElementById("game").onclick=function(){
+function saint2a() {
+    state.saint += 2;
+    show(
+`人々は涙を流しながら罪を語る。
+少女は優しく頷く。
 
-const scene = story[current];
-
-if(scene.next){
-current=scene.next;
-showScene();
+「赦されます」`,
+    [
+        { text: "儀式を見守る", action: saint3 },
+    ]);
 }
 
-};
+function saint2b() {
+    state.saint -= 1;
+    show(
+`少女は少しだけ首を傾げる。
 
-document.getElementById("restart").onclick=function(e){
-e.stopPropagation();
-current="start";
-showScene();
-};
+「あなたも、苦しいのですね」`,
+    [
+        { text: "去る", action: nextChoice },
+    ]);
+}
 
-showScene();
+function saint3() {
+    show(
+`人々は自らの血を流している。
+少女は涙を流す。
+
+「うつくしい……」`,
+    [
+        { text: "最後まで見る", action: endCheck },
+    ]);
+}
+
+// --- 魔術師ルート ---
+function mage1() {
+    state.mage += 2;
+    show(
+`塔の中には死体が並んでいる。
+
+男は言う。
+
+「死とは現象にすぎない」`,
+    [
+        { text: "研究を見る", action: mage2a },
+        { text: "目を背ける", action: mage2b }
+    ]);
+}
+
+function mage2a() {
+    state.mage += 2;
+    show(
+`肉体がわずかに動く。
+
+「ほら、まだ終わっていない」`,
+    [
+        { text: "手伝う", action: mage3 },
+    ]);
+}
+
+function mage2b() {
+    state.mage -= 1;
+    show(
+`男は興味を失ったように背を向ける。`,
+    [
+        { text: "去る", action: nextChoice },
+    ]);
+}
+
+function mage3() {
+    show(
+`それは動いている。
+無数の腕と顔。
+
+「愛してる」`,
+    [
+        { text: "抱きしめるのを見る", action: endCheck },
+    ]);
+}
+
+// --- 分岐 ---
+function nextChoice() {
+    show(
+`再び道が分かれる。`,
+    [
+        { text: "神殿へ", action: saint1 },
+        { text: "塔へ", action: mage1 },
+        { text: "終わりへ進む", action: endCheck }
+    ]);
+}
+
+// --- エンド判定 ---
+function endCheck() {
+    if (state.saint > state.mage) {
+        endingA();
+    } else {
+        endingC();
+    }
+}
+
+// --- エンディングA ---
+function endingA() {
+    show(
+`「——聖女様は嘆き悲しまれました。人の罪とは肉体にあるのだと。いつもいつも聖女様は哀しそうなお顔をされていました。
+聖女様は祈られました。わたしたちのために。
+せいじょさまはしめされました。かみのくにへといくほうほうを。
+わたしたちはみずからの（かわをはぎ）【検閲済】ひふからは（ちがながれ）【検閲済】わたしたちの罪もすこしづつながれてゆきました。ぬらぬらとあたたかいものがすこしづつすこしづつながれてゆきました。
+そして、そらがわれました。ひびがはいり、そうほんとうにわれたのです。
+つよいつよいひかりがそこからもれだしました。
+そしてそのなかからうつくしいてんしさまがまいおりてこられました。
+てんしさまはまっすぐせいじょさまのもとへおりられました。
+みんなみんなしっていました。だってせいじょさまがいちばんいのられていましたから。
+せいじょさまはひざまずいて、てんしさまをみあげられました。
+とてもとてもきれいなおすがたでした。
+てんしさまはせいじょさまをやさしくつつみこみ、せいじょさまを（おたべになられ）【検閲済】ました。
+みんなわかっていました。それがきゅうさいなのだと。
+みんなないていました。うれしくてないていました。せいじょさまがすくわれたと。おやさしいせいじょさまがすくわれたと。かみのくにへとみちびかれたと。
+そうして、せいじょさまのあのうつくしいしろいかみだけがそこにはのこされていました。
+
+もうじきわたしもきゅうさいされるのでしょう。てんしさまはみんなをびょうどうにあいしすくってくださいます。
+ようやくです。なんとうれしいものでしょうか。ようやく、ようやく！わたしたちはすくわれます！
+いったい、これいじょうのこうふくが、このせかいのどこかにあるとでもいうのでしょうか！！」`,
+    [
+        { text: "最初へ戻る", action: restart }
+    ]);
+}
+
+// --- エンディングC ---
+function endingC() {
+    show(
+`彼女は生き返った。
+――嗚呼、思うに、これこそが心理。これこそが私が「封鍵」の奥底に見出した究極の解答。
+
+彼女は、無数の肉体を持って戻ってきた。
+かつての彼女は、あまりに儚く、欠陥だらけであった。たった一つの心臓に一対の瞳、そして細い二本の腕。
+それだから彼女はあんなにも容易く死んでしまったのだろう。
+
+世界よ、視るがいい！今の彼女の神々しい姿を！
+数え切れないほどの瞳が愛に満ちた眼差しで私だけを射抜き、幾千もの唇が甘く、湿った熱を帯びた大気を、彼女の芳醇な肺胞の匂いへと書き換え続けている。
+
+「愛している」
+
+私の微かな囁きは彼女に届いただろうか。都市を揺るがすその地鳴りのようなソレは、もはや彼女の鼓動なのか、それとも私の脳髄が歓喜で爆ぜる音なのか、判別することに何の意味があるだろうか。
+彼女の腕が、足が、私の（肉体に食い込み）【検閲済】、優しく、けれど拒絶を許さぬ力で私を内側へと招き入れる。
+ぐちゃりと、（何かが作り変えられる骨が砕ける音）【検閲済】さえ、抱擁の旋律に聞こえる。
+（私の血）【検閲済】は彼女の海へと注がれ、私の神経は彼女の網目へと融けていく。
+
+ようやく、ようやく一つになれるのだ。
+
+私の愛した彼女が、この世界そのものを塗り潰し、飲み込み、そのすべてが彼女そのものとなる。
+嗚呼、愛している。愛している、愛している！
+指先が、皮膚が、神経の一本一本までもが、彼女の温かな粘膜へと溶け落ちていくこの歓喜を、一体なんと呼べばいい！
+私という存在が、彼女という巨大な慈悲に（噛み砕かれ）【検閲済】、抱きすくめられ、血の一滴まで彼女の愛へと置換されていく。
+
+見てごらん、世界が、あんなにも瑞々しい彼女の色に染まっていく。
+人の心などもたない人間も、冷え切った石畳も、空を覆う絶望も、すべてが彼女の柔らかな肉へと招かれ、永遠の、あまりに永遠すぎる愛のなかに融解していく。
+
+――さあ、愛しい人よ。もっと、もっと世界を食べて。
+あなたのなかで、あなたの細胞の一つとして、私は永遠にあなたを愛し続けよう。
+この幸福な肉の波間に、私という最後のひとかけらが溶け消えるまで！！`,
+    [
+        { text: "最初へ戻る", action: restart }
+    ]);
+}
+
+function restart() {
+    state = { saint: 0, mage: 0 };
+    start();
+}
+
+// 開始
+start();
 
 </script>
 
