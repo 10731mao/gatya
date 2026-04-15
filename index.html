@@ -119,8 +119,11 @@ function start() {
 
 影は男の喉元に、冷たい指先を這わせた。
 
-神殿。
-塔。`,
+
+ーーーーーー
+
+「神殿
+塔」`,
     [
         { text: "神殿へ向かう", action: saint1 },
         { text: "塔へ向かう", action: mage1 }
@@ -131,10 +134,10 @@ function start() {
 function saint1() {
     state.saint += 2;
     show(
-`神殿では食事が配られている。
+`神殿では温かな食事が配られている。
 白い少女が微笑みながら手を取る。
 
-「あなたも救われますように」`,
+「あなたが救われますように」`,
     [
         { text: "祈りを受ける", action: saint2a },
         { text: "手を振り払う", action: saint2b }
